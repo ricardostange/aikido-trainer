@@ -200,11 +200,11 @@
                 utterance.pitch = 1.0;
 
                 // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-                if (preferredVoice) {
-                    utterance.voice = preferredVoice;
-                }
+                // const voices = window.speechSynthesis.getVoices();
+                // const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+                // if (preferredVoice) {
+                //     utterance.voice = preferredVoice;
+                // }
 
                 window.speechSynthesis.speak(utterance);
         }
