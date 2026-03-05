@@ -8,14 +8,8 @@
 ## Project Overview
 The **Aikido Trainer** is a lightweight, single-page web application designed to help practitioners learn and review Aikido techniques. It provides a clean, accessible interface for exploring tutorials and movement classifications.
 
-## Getting Started
+## 🛠️ Developer Setup
 
-### 🚀 Quick Start
-To view the application locally without any setup:
-1. Download or locate the `index.html` file.
-2. Open it in any modern web browser (Chrome, Firefox, Safari, etc.).
-
-### 🛠️ Developer Setup
 If you wish to contribute or modify the source code:
 
 1. **Clone the repository:**
