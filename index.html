@@ -59,60 +59,42 @@
     </footer>
 
     <div id="overlay" class="absolute inset-0 bg-slate-900 flex items-center justify-center p-10 z-50">
-        <button onclick="initApp()" class="bg-indigo-600 px-8 py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl shadow-indigo-500/50">
+        <button onclick="initApp()" class="bg-indigo-600 px-8 py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl shadow-indigo-500/50 text-center">
             Começar Treino de Faixa Preta
         </button>
     </div>
 
     <script>
         // Dados do Aplicativo
-    const ataques = [
-        "Katatetori", 
-        "Shomen Uchi", 
-        "Ryotetori", 
-        "Munetsuki", 
-        "Ushiro Kubishime", 
-        "Ryote Eri Tori", 
-        "Ushiro Ryotetori", 
-        "Yokomen Uchi", 
-        "Ushiro Katatori", 
-        "Katate Munadori", 
-        "Morotetori"
-    ];
+        const ataques = [
+            "Katatetori", "Shomen Uchi", "Ryotetori", "Munetsuki", 
+            "Ushiro Kubishime", "Ryote Eri Tori", "Ushiro Ryotetori", 
+            "Yokomen Uchi", "Ushiro Katatori", "Katate Munadori", "Morotetori"
+        ];
 
-    const defesas = [
-        "Dai-Ikkio", 
-        "Dai-Nikio", 
-        "Dai-Sankio", 
-        "Dai-Yonkio", 
-        "Dai-Gokio", 
-        "Irimi-Nage", 
-        "Shiho-Nage", 
-        "Kaiten-Nage", 
-        "Tenchi-Nage", 
-        "Kokiu-Nage", 
-        "Koshi-Nage", 
-        "Mawashi-Nage", 
-        "Sumi-Otoshi", 
-        "Kote-Gaeshi", 
-        "Kata-Moshi", 
-        "Ushiro-Kokiu", 
-        "Hiji-Garami", 
-        "Ude-Garami", 
-        "Juji-Garami", 
-        "Aiki-Otoshi", 
-        "Aiki-Nage"
-    ];
+        const defesas = [
+            "Dai-Ikkio", "Dai-Nikio", "Dai-Sankio", "Dai-Yonkio", "Dai-Gokio", 
+            "Irimi-Nage", "Shiho-Nage", "Kaiten-Nage", "Tenchi-Nage", "Kokiu-Nage", 
+            "Koshi-Nage", "Mawashi-Nage", "Sumi-Otoshi", "Kote-Gaeshi", "Kata-Moshi", 
+            "Ushiro-Kokiu", "Hiji-Garami", "Ude-Garami", "Juji-Garami", "Aiki-Otoshi", "Aiki-Nage"
+        ];
+
         let weights = {};
         let currentAttack = "";
         let currentRoundDefenses = [];
         let defenseIndex = 0;
         let isMuted = false;
 
-        // Inicialização
+        // Inicialização com Wake-up de áudio para Mobile
         function initApp() {
             document.getElementById('overlay').classList.add('hidden');
             document.getElementById('controls').classList.remove('hidden');
+            
+            // Força o desbloqueio do áudio no mobile com uma fala vazia
+            window.speechSynthesis.cancel();
+            const wakeUp = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(wakeUp);
+            
             loadWeights();
             startNewRound();
         }
@@ -130,7 +112,6 @@
             localStorage.setItem('aikido_weights', JSON.stringify(weights));
         }
 
-        // Sorteio Ponderado (Lógica da Loteria)
         function getWeightedRandomDefenses(count) {
             let pool = [...defesas];
             let selected = [];
@@ -144,7 +125,7 @@
                     cumulative += weights[pool[j]];
                     if (random <= cumulative) {
                         selected.push(pool[j]);
-                        pool.splice(j, 1); // Evita repetir a mesma defesa na rodada de 3
+                        pool.splice(j, 1);
                         break;
                     }
                 }
@@ -168,18 +149,14 @@
             speak(`${currentAttack}... ${defense}`);
         }
 
-        // Lógica de Avaliação e Avanço
         function evaluateMove(rating) {
             const defense = currentRoundDefenses[defenseIndex];
 
-            // Ajuste dos pesos (Matemática solicitada)
             if (rating === 'facil') weights[defense] = Math.max(1, weights[defense] / 2);
             if (rating === 'medio') weights[defense] += 2;
             if (rating === 'dificil') weights[defense] *= 3;
 
             saveWeights();
-
-            // Avança para o próximo
             defenseIndex++;
 
             if (defenseIndex < 3) {
@@ -189,15 +166,37 @@
             }
         }
 
-        // Voz (Text-to-Speech)
+        // Função de voz otimizada para Mobile (iOS/Android)
         function speak(text) {
             if (isMuted) return;
+
+            // Cancela falas pendentes para evitar travamento da fila no mobile
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP';
-            utterance.rate = 0.8; // Um pouco mais lento para clareza
-            window.speechSynthesis.speak(utterance);
+
+            // Pequeno atraso para o sistema mobile processar o cancelamento
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Configurações de voz
+                utterance.lang = 'ja-JP';
+                utterance.rate = 0.8;
+                utterance.pitch = 1.0;
+
+                // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
+
+        // Garante que as vozes sejam carregadas no Chrome/Android
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
 
         function toggleMute() {
             isMuted = !isMuted;
