@@ -191,21 +191,21 @@
             // Cancela falas pendentes para evitar travamento da fila no mobile
             window.speechSynthesis.cancel();
 
-                const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Configurações de voz
-                utterance.lang = 'ja-JP';
-                utterance.rate = 0.8;
-                utterance.pitch = 1.0;
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Configurações de voz
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
 
-                // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-                if (preferredVoice) {
-                    utterance.voice = preferredVoice;
-                }
+            // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
+            // const voices = window.speechSynthesis.getVoices();
+            // const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+            // if (preferredVoice) {
+            //     utterance.voice = preferredVoice;
+            // }
 
-                window.speechSynthesis.speak(utterance);
+            window.speechSynthesis.speak(utterance);
         }
 
         // Garante que as vozes sejam carregadas no Chrome/Android
