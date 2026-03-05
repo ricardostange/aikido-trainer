@@ -194,17 +194,16 @@
             const utterance = new SpeechSynthesisUtterance(text);
             
             // Configurações de voz
-            utterance.lang = 'ja-JP';
             utterance.lang = 'pt-BR';
             utterance.rate = 0.8;
             utterance.pitch = 1.0;
 
             // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
-            // const voices = window.speechSynthesis.getVoices();
-            // const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-            // if (preferredVoice) {
-            //     utterance.voice = preferredVoice;
-            // }
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
 
             window.speechSynthesis.speak(utterance);
         }
