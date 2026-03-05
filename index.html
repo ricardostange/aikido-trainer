@@ -174,7 +174,23 @@
             window.speechSynthesis.cancel();
 
             // Pequeno atraso para o sistema mobile processar o cancelamento
-            setTimeout(() => {
+            // setTimeout(() => {
+            //     const utterance = new SpeechSynthesisUtterance(text);
+                
+            //     // Configurações de voz
+            //     utterance.lang = 'ja-JP';
+            //     utterance.rate = 0.8;
+            //     utterance.pitch = 1.0;
+
+            //     // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
+            //     const voices = window.speechSynthesis.getVoices();
+            //     const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+            //     if (preferredVoice) {
+            //         utterance.voice = preferredVoice;
+            //     }
+
+            //     window.speechSynthesis.speak(utterance);
+            // }, 50);
                 const utterance = new SpeechSynthesisUtterance(text);
                 
                 // Configurações de voz
@@ -189,9 +205,7 @@
                     utterance.voice = preferredVoice;
                 }
 
-                windows.speechSynthesis.cancel();
                 window.speechSynthesis.speak(utterance);
-            }, 50);
         }
 
         // Garante que as vozes sejam carregadas no Chrome/Android
