@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🥋 Aikido Trainer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -21,4 +20,5 @@ If you wish to contribute or modify the source code:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/ricardostange/aikido-trainer.git](https://github.com/ricardostange/aikido-trainer.git) ```
+   git clone [https://github.com/ricardostange/aikido-trainer.git](https://github.com/ricardostange/aikido-trainer.git) 
+   ```
