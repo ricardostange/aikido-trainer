@@ -189,6 +189,7 @@
                     utterance.voice = preferredVoice;
                 }
 
+                windows.speechSynthesis.cancel();
                 window.speechSynthesis.speak(utterance);
             }, 50);
         }
