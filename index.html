@@ -50,7 +50,7 @@
         </button>
         <button onclick="evaluateMove('medio')" class="bg-amber-500 hover:bg-amber-400 btn-active flex flex-col items-center justify-center p-4">
             <span class="text-3xl">😐</span>
-            <span class="font-black text-xs mt-2 uppercase text-amber-900">Médioo</span>
+            <span class="font-black text-xs mt-2 uppercase text-amber-900">Médio</span>
         </button>
         <button onclick="evaluateMove('dificil')" class="bg-rose-600 hover:bg-rose-500 btn-active flex flex-col items-center justify-center p-4">
             <span class="text-3xl">😱</span>
@@ -194,17 +194,16 @@
                 const utterance = new SpeechSynthesisUtterance(text);
                 
                 // Configurações de voz
-                //utterance.lang = 'ja-JP';
-                utterance.lang = 'pt-BR';
+                utterance.lang = 'ja-JP';
                 utterance.rate = 0.8;
                 utterance.pitch = 1.0;
 
                 // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
-                // const voices = window.speechSynthesis.getVoices();
-                // const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-                // if (preferredVoice) {
-                //     utterance.voice = preferredVoice;
-                // }
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                }
 
                 window.speechSynthesis.speak(utterance);
         }
