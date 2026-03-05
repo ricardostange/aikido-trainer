@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sensei de Aikido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .btn-active:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col overflow-hidden select-none">
+
+    <header class="p-4 flex justify-between items-center bg-slate-800 shadow-md">
+        <button onclick="toggleMute()" id="muteBtn" class="bg-slate-700 p-2 rounded-lg text-sm font-bold uppercase tracking-wider">
+            🔊 Som Ligado
+        </button>
+        <button onclick="resetProgress()" class="text-slate-400 text-xs underline uppercase tracking-widest">
+            Zerar Progresso
+        </button>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-around p-6 text-center">
+        
+        <div class="w-full">
+            <p class="text-slate-400 uppercase tracking-widest text-sm mb-2">Ataque</p>
+            <h1 id="attackName" class="text-4xl md:text-5xl font-black text-indigo-400 uppercase leading-none italic">
+                Aguardando...
+            </h1>
+        </div>
+
+        <div class="w-full py-8">
+            <p id="stepIndicator" class="text-slate-500 uppercase tracking-widest text-xs mb-4">Técnica 1 de 3</p>
+            <h2 id="defenseName" class="text-6xl md:text-8xl font-black text-white leading-tight">
+                Toque para Iniciar
+            </h2>
+        </div>
+
+        <div id="statusMsg" class="h-6 text-slate-500 text-xs italic">
+            Pratique os dois lados (Omote/Ura)
+        </div>
+    </main>
+
+    <footer id="controls" class="hidden grid grid-cols-3 h-48 md:h-64 border-t border-slate-700">
+        <button onclick="evaluateMove('facil')" class="bg-emerald-600 hover:bg-emerald-500 btn-active flex flex-col items-center justify-center p-4">
+            <span class="text-3xl">😊</span>
+            <span class="font-black text-xs mt-2 uppercase">Fácil</span>
+        </button>
+        <button onclick="evaluateMove('medio')" class="bg-amber-500 hover:bg-amber-400 btn-active flex flex-col items-center justify-center p-4">
+            <span class="text-3xl">😐</span>
+            <span class="font-black text-xs mt-2 uppercase text-amber-900">Médio</span>
+        </button>
+        <button onclick="evaluateMove('dificil')" class="bg-rose-600 hover:bg-rose-500 btn-active flex flex-col items-center justify-center p-4">
+            <span class="text-3xl">😱</span>
+            <span class="font-black text-xs mt-2 uppercase">Difícil</span>
+        </button>
+    </footer>
+
+    <div id="overlay" class="absolute inset-0 bg-slate-900 flex items-center justify-center p-10 z-50">
+        <button onclick="initApp()" class="bg-indigo-600 px-8 py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl shadow-indigo-500/50">
+            Começar Treino de Faixa Preta
+        </button>
+    </div>
+
+    <script>
+        // Dados do Aplicativo
+    const ataques = [
+        "Katatetori", 
+        "Shomen Uchi", 
+        "Ryotetori", 
+        "Munetsuki", 
+        "Ushiro Kubishime", 
+        "Ryote Eri Tori", 
+        "Ushiro Ryotetori", 
+        "Yokomen Uchi", 
+        "Ushiro Katatori", 
+        "Katate Munadori", 
+        "Morotetori"
+    ];
+
+    const defesas = [
+        "Dai-Ikkio", 
+        "Dai-Nikio", 
+        "Dai-Sankio", 
+        "Dai-Yonkio", 
+        "Dai-Gokio", 
+        "Irimi-Nage", 
+        "Shiho-Nage", 
+        "Kaiten-Nage", 
+        "Tenchi-Nage", 
+        "Kokiu-Nage", 
+        "Koshi-Nage", 
+        "Mawashi-Nage", 
+        "Sumi-Otoshi", 
+        "Kote-Gaeshi", 
+        "Kata-Moshi", 
+        "Ushiro-Kokiu", 
+        "Hiji-Garami", 
+        "Ude-Garami", 
+        "Juji-Garami", 
+        "Aiki-Otoshi", 
+        "Aiki-Nage"
+    ];
+        let weights = {};
+        let currentAttack = "";
+        let currentRoundDefenses = [];
+        let defenseIndex = 0;
+        let isMuted = false;
+
+        // Inicialização
+        function initApp() {
+            document.getElementById('overlay').classList.add('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            loadWeights();
+            startNewRound();
+        }
+
+        function loadWeights() {
+            const saved = localStorage.getItem('aikido_weights');
+            if (saved) {
+                weights = JSON.parse(saved);
+            } else {
+                defesas.forEach(d => weights[d] = 10);
+            }
+        }
+
+        function saveWeights() {
+            localStorage.setItem('aikido_weights', JSON.stringify(weights));
+        }
+
+        // Sorteio Ponderado (Lógica da Loteria)
+        function getWeightedRandomDefenses(count) {
+            let pool = [...defesas];
+            let selected = [];
+
+            for (let i = 0; i < count; i++) {
+                let totalWeight = pool.reduce((sum, d) => sum + weights[d], 0);
+                let random = Math.random() * totalWeight;
+                let cumulative = 0;
+
+                for (let j = 0; j < pool.length; j++) {
+                    cumulative += weights[pool[j]];
+                    if (random <= cumulative) {
+                        selected.push(pool[j]);
+                        pool.splice(j, 1); // Evita repetir a mesma defesa na rodada de 3
+                        break;
+                    }
+                }
+            }
+            return selected;
+        }
+
+        function startNewRound() {
+            currentAttack = ataques[Math.floor(Math.random() * ataques.length)];
+            currentRoundDefenses = getWeightedRandomDefenses(3);
+            defenseIndex = 0;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const defense = currentRoundDefenses[defenseIndex];
+            document.getElementById('attackName').innerText = currentAttack;
+            document.getElementById('defenseName').innerText = defense;
+            document.getElementById('stepIndicator').innerText = `Técnica ${defenseIndex + 1} de 3`;
+            
+            speak(`${currentAttack}... ${defense}`);
+        }
+
+        // Lógica de Avaliação e Avanço
+        function evaluateMove(rating) {
+            const defense = currentRoundDefenses[defenseIndex];
+
+            // Ajuste dos pesos (Matemática solicitada)
+            if (rating === 'facil') weights[defense] = Math.max(1, weights[defense] / 2);
+            if (rating === 'medio') weights[defense] += 2;
+            if (rating === 'dificil') weights[defense] *= 3;
+
+            saveWeights();
+
+            // Avança para o próximo
+            defenseIndex++;
+
+            if (defenseIndex < 3) {
+                updateDisplay();
+            } else {
+                startNewRound();
+            }
+        }
+
+        // Voz (Text-to-Speech)
+        function speak(text) {
+            if (isMuted) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.8; // Um pouco mais lento para clareza
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('muteBtn').innerText = isMuted ? "🔇 Mudo" : "🔊 Som Ligado";
+        }
+
+        function resetProgress() {
+            if (confirm("Tem certeza que quer zerar o aprendizado das técnicas?")) {
+                localStorage.removeItem('aikido_weights');
+                loadWeights();
+                alert("Progresso zerado!");
+                startNewRound();
+            }
+        }
+    </script>
+</body>
+</html>
