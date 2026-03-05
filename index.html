@@ -84,6 +84,7 @@
         let currentRoundDefenses = [];
         let defenseIndex = 0;
         let isMuted = false;
+        let recentQueue = []; 
 
         // Inicialização com Wake-up de áudio para Mobile
         function initApp() {
@@ -113,7 +114,7 @@
         }
 
         function getWeightedRandomDefenses(count) {
-            let pool = [...defesas];
+            let pool = defesas.filter(d => !recentQueue.includes(d));
             let selected = [];
 
             for (let i = 0; i < count; i++) {
@@ -151,10 +152,27 @@
 
         function evaluateMove(rating) {
             const defense = currentRoundDefenses[defenseIndex];
+            let currentWeight = weights[defense] || 10;
 
-            if (rating === 'facil') weights[defense] = Math.max(1, weights[defense] / 2);
-            if (rating === 'medio') weights[defense] += 2;
-            if (rating === 'dificil') weights[defense] *= 3;
+            if (rating === 'facil') {
+                // Reduz suavemente. Demora mais para "sumir", garantindo a perfeição.
+                currentWeight = Math.max(2, currentWeight - 3); 
+            } 
+            else if (rating === 'medio') {
+                // Mantém o desafio ou sobe levemente
+                currentWeight += 5;
+            } 
+            else if (rating === 'dificil') {
+                // Sobe agressivo, mas com um limite saudável
+                currentWeight += 15;
+            }
+
+            // Teto de 50 para não saturar o sorteio
+            weights[defense] = Math.min(currentWeight, 50);
+
+            // Adiciona à fila de resfriamento (para não repetir logo em seguida)
+            recentQueue.push(defense);
+            if (recentQueue.length > 6) recentQueue.shift(); 
 
             saveWeights();
             defenseIndex++;
@@ -173,24 +191,6 @@
             // Cancela falas pendentes para evitar travamento da fila no mobile
             window.speechSynthesis.cancel();
 
-            // Pequeno atraso para o sistema mobile processar o cancelamento
-            // setTimeout(() => {
-            //     const utterance = new SpeechSynthesisUtterance(text);
-                
-            //     // Configurações de voz
-            //     utterance.lang = 'ja-JP';
-            //     utterance.rate = 0.8;
-            //     utterance.pitch = 1.0;
-
-            //     // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
-            //     const voices = window.speechSynthesis.getVoices();
-            //     const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
-            //     if (preferredVoice) {
-            //         utterance.voice = preferredVoice;
-            //     }
-
-            //     window.speechSynthesis.speak(utterance);
-            // }, 50);
                 const utterance = new SpeechSynthesisUtterance(text);
                 
                 // Configurações de voz
