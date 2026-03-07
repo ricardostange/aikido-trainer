@@ -335,7 +335,7 @@
             const currentAttack = state.examAttacks[state.currentAttackIndex];
             const defense = state.currentRoundDefenses[state.defenseIndex];
 
-            state.currentExamRatings[rating].push(`${currentAttack} x ${defense}`);
+            state.currentExamRatings[rating].push(`${currentAttack} - ${defense}`);
             state.usedCombinations.push(`${currentAttack}|${defense}`);
             state.defenseIndex++;
 
