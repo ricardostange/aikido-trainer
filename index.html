@@ -54,18 +54,32 @@
         </div>
     </main>
 
-    <footer id="controls" class="hidden grid grid-cols-3 h-48 md:h-64 border-t border-black/20 z-10 bg-black/10">
-        <button onclick="evaluateMove('facil')" class="bg-emerald-600 hover:bg-emerald-500 btn-active flex flex-col items-center justify-center p-4">
-            <span class="text-3xl">😊</span>
-            <span class="font-black text-xs mt-2 uppercase">Fácil</span>
+    <footer id="controls" class="hidden grid grid-cols-3 gap-3 p-4 h-40 md:h-48 border-t border-white/5 z-10 bg-black/20 backdrop-blur-md">
+        <button onclick="evaluateMove('facil')" class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center p-2 transition-all btn-active group">
+            <svg class="w-10 h-10 text-emerald-400 mb-2 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="font-black text-[10px] md:text-xs uppercase tracking-widest text-emerald-400">Fácil</span>
         </button>
-        <button onclick="evaluateMove('medio')" class="bg-amber-500 hover:bg-amber-400 btn-active flex flex-col items-center justify-center p-4">
-            <span class="text-3xl">😐</span>
-            <span class="font-black text-xs mt-2 uppercase text-amber-900">Médio</span>
+        
+        <button onclick="evaluateMove('medio')" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-2xl flex flex-col items-center justify-center p-2 transition-all btn-active group">
+            <svg class="w-10 h-10 text-amber-400 mb-2 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+            </svg>
+            <span class="font-black text-[10px] md:text-xs uppercase tracking-widest text-amber-400">Médio</span>
         </button>
-        <button onclick="evaluateMove('dificil')" class="bg-rose-600 hover:bg-rose-500 btn-active flex flex-col items-center justify-center p-4">
-            <span class="text-3xl">😱</span>
-            <span class="font-black text-xs mt-2 uppercase">Difícil</span>
+        
+        <button onclick="evaluateMove('dificil')" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-2xl flex flex-col items-center justify-center p-2 transition-all btn-active group">
+            <svg class="w-10 h-10 text-rose-400 mb-2 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span class="font-black text-[10px] md:text-xs uppercase tracking-widest text-rose-400">Difícil</span>
+        </button>
+    </footer>
+
+    <footer id="finalAction" class="hidden w-full p-6 border-t border-white/5 z-10 bg-black/20 backdrop-blur-md">
+        <button id="finalBtn" onclick="confirmResetAll()" class="w-full py-6 rounded-2xl text-xl md:text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all hover:scale-[1.02]">
+            Zerar Tudo
         </button>
     </footer>
 
@@ -87,7 +101,7 @@
     </div>
 
     <div id="overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-10 z-50 transition-colors duration-500">
-        <button onclick="initExamMode()" id="startBtn" class="bg-indigo-600 w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all">
+        <button onclick="initExamMode()" id="startBtn" class="bg-indigo-600 w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all hover:scale-[1.02]">
             Começar Treino
         </button>
     </div>
@@ -109,7 +123,7 @@
 
     <script>
         // --- CONTROLE DE VERSÃO ---
-        const APP_VERSION = 6; // Only change on breaking changes, because can damage current user data. Old data will be cleared if version is different.
+        const APP_VERSION = 6; // Mantido em 6 para não resetar seu progresso atual.
 
         // Dados do Nível (Faixas)
         const beltsData = {
@@ -149,7 +163,7 @@
 
         // Estado Global
         let state = {
-            belt: null, // "azul", "marrom", ou "preta"
+            belt: null,
             usedCombinations: [],
             examAttacks: [],
             currentAttackIndex: 0,
@@ -196,29 +210,31 @@
             return arr;
         }
 
-        // Calcula dinamicamente o número total de provas necessárias
         function getTotalExams() {
             if (!state.belt) return 1;
             return Math.ceil(beltsData[state.belt].defesas.length / 3);
         }
 
-        // Aplica as cores baseadas na faixa selecionada
         function applyTheme() {
             if (!state.belt) return;
             const theme = beltsData[state.belt].theme;
             
-            // Remove classes antigas de fundo
             document.getElementById('bodyEl').className = `text-white min-h-screen flex flex-col overflow-hidden select-none transition-colors duration-500 ${theme.body}`;
             document.getElementById('headerEl').className = `p-4 flex justify-between items-center shadow-md z-10 transition-colors duration-500 ${theme.header}`;
             
-            // Título do Ataque
             const attackName = document.getElementById('attackName');
             attackName.className = `text-4xl md:text-5xl font-black uppercase leading-none italic transition-colors duration-500 ${theme.highlight}`;
             
-            // Botões principais (Iniciar e Feedback)
-            const btnClasses = `w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all ${theme.button} ${theme.shadow}`;
+            // Aplica no botão inicial
+            const btnClasses = `w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all hover:scale-[1.02] ${theme.button} ${theme.shadow}`;
             document.getElementById('startBtn').className = btnClasses;
-            document.getElementById('feedbackNextBtn').className = `w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl text-center mt-auto mb-4 transition-all ${theme.button} ${theme.shadow}`;
+            
+            // Aplica no botão da tela de feedback
+            document.getElementById('feedbackNextBtn').className = `w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl text-center mt-auto mb-4 transition-all hover:scale-[1.02] ${theme.button} ${theme.shadow}`;
+            
+            // Aplica no botão do Grand Finale (O novo rodapé)
+            const finalBtnClasses = `w-full py-6 rounded-2xl text-xl md:text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all hover:scale-[1.02] ${theme.button} ${theme.shadow}`;
+            document.getElementById('finalBtn').className = finalBtnClasses;
         }
 
         function initApp() {
@@ -226,12 +242,10 @@
             loadState(); 
 
             if (!state.belt) {
-                // Primeira vez ou reset: Mostra a seleção de faixa
                 document.getElementById('beltSelection').classList.remove('hidden');
                 document.getElementById('beltSelection').classList.add('flex');
                 document.getElementById('overlay').classList.add('hidden');
             } else {
-                // Já tem faixa salva, configura o app e mostra botão de continuar
                 document.getElementById('beltSelection').classList.add('hidden');
                 document.getElementById('beltSelection').classList.remove('flex');
                 document.getElementById('overlay').classList.remove('hidden');
@@ -243,7 +257,7 @@
 
         function selectBelt(beltKey) {
             state.belt = beltKey;
-            state.examNumber = 1; // Garante que inicia na primeira prova
+            state.examNumber = 1;
             saveState();
             
             document.getElementById('beltSelection').classList.add('hidden');
@@ -271,6 +285,10 @@
             document.getElementById('overlay').classList.add('hidden');
             document.getElementById('feedbackScreen').classList.add('hidden');
             document.getElementById('feedbackScreen').classList.remove('flex');
+            
+            // Garante que a barra final fique oculta caso esteja reiniciando
+            document.getElementById('finalAction').classList.add('hidden');
+            
             document.getElementById('controls').classList.remove('hidden');
             document.getElementById('statusMsg').innerText = "Pratique os dois lados (Omote/Ura)";
             
@@ -311,7 +329,6 @@
             let availableDefenses = defesasNivel.filter(d => !state.usedCombinations.includes(`${currentAttack}|${d}`));
             
             availableDefenses = shuffleArray(availableDefenses);
-            // Pega até 3 defesas. Na última prova podem sobrar menos que 3
             state.currentRoundDefenses = availableDefenses.slice(0, 3);
             state.defenseIndex = 0;
             
@@ -362,12 +379,16 @@
             content.innerHTML = '';
             const ratings = state.currentExamRatings;
 
-            const renderList = (title, items, bgColor, textColor, borderColor, emoji) => {
+            const iconDif = `<svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`;
+            const iconMed = `<svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" /></svg>`;
+            const iconFac = `<svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>`;
+
+            const renderList = (title, items, bgColor, textColor, borderColor, iconHtml) => {
                 if (items.length === 0) return '';
                 let html = `
                     <div class="${bgColor} rounded-xl p-4 border-l-4 ${borderColor}">
                         <h3 class="text-sm font-bold mb-3 uppercase tracking-wider flex items-center gap-2 ${textColor}">
-                            <span>${emoji}</span> ${title} (${items.length})
+                            ${iconHtml} <span>${title} (${items.length})</span>
                         </h3>
                         <ul class="text-sm text-white/80 space-y-2 ml-2">`;
                 items.forEach(item => {
@@ -377,9 +398,9 @@
                 return html;
             };
 
-            content.innerHTML += renderList('Difíceis', ratings.dificil, 'bg-rose-950/50', 'text-rose-400', 'border-rose-500', '😱');
-            content.innerHTML += renderList('Médias', ratings.medio, 'bg-amber-950/50', 'text-amber-400', 'border-amber-500', '😐');
-            content.innerHTML += renderList('Fáceis', ratings.facil, 'bg-emerald-950/50', 'text-emerald-400', 'border-emerald-500', '😊');
+            content.innerHTML += renderList('Difíceis', ratings.dificil, 'bg-rose-950/50', 'text-rose-400', 'border-rose-500', iconDif);
+            content.innerHTML += renderList('Médias', ratings.medio, 'bg-amber-950/50', 'text-amber-400', 'border-amber-500', iconMed);
+            content.innerHTML += renderList('Fáceis', ratings.facil, 'bg-emerald-950/50', 'text-emerald-400', 'border-emerald-500', iconFac);
 
             if (state.examNumber >= getTotalExams()) {
                 btn.innerText = "Ver Resultado Final";
@@ -417,16 +438,15 @@
             document.getElementById('stepIndicator').innerText = `Todas as ${totalTecnicas} técnicas`;
             document.getElementById('statusMsg').innerText = "Dominou todos os ataques e defesas do seu nível.";
             
+            // Esconde TUDO que possa atrapalhar
             document.getElementById('controls').classList.add('hidden');
             document.getElementById('resetOptions').classList.add('hidden');
-            const overlay = document.getElementById('overlay');
-            overlay.classList.remove('hidden');
+            document.getElementById('overlay').classList.add('hidden');
             
-            const btn = document.getElementById('startBtn');
-            btn.innerText = "Zerar Tudo e Trocar Faixa";
-            btn.onclick = confirmResetAll;
+            // Mostra APENAS a barra inferior de Ação Final
+            document.getElementById('finalAction').classList.remove('hidden');
 
-            speak(`Parabéns!`);
+            speak(`Parabéns! Você completou a ${data.nome}.`);
         }
 
         function confirmResetAll() {
@@ -443,11 +463,10 @@
                     currentExamRatings: { facil: [], medio: [], dificil: [] }
                 };
                 
-                // Restaura interface
                 document.getElementById('startBtn').onclick = initExamMode; 
                 document.getElementById('resetOptions').classList.remove('hidden');
+                document.getElementById('finalAction').classList.add('hidden');
                 
-                // Remove o tema visual atual voltando para o padrão (padrão preta/slate)
                 document.getElementById('bodyEl').className = `bg-slate-900 text-white min-h-screen flex flex-col overflow-hidden select-none transition-colors duration-500`;
                 document.getElementById('headerEl').className = `p-4 flex justify-between items-center bg-slate-800 shadow-md z-10 transition-colors duration-500`;
                 
@@ -461,7 +480,7 @@
                 let combosToRemove = [];
                 ['facil', 'medio', 'dificil'].forEach(rating => {
                     state.currentExamRatings[rating].forEach(item => {
-                        const parts = item.split(" x ");
+                        const parts = item.split(" - ");
                         if(parts.length === 2) {
                             combosToRemove.push(`${parts[0]}|${parts[1]}`);
                         }
