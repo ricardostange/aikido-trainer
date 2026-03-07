@@ -7,43 +7,54 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.5s ease; }
         .btn-active:active { transform: scale(0.95); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex flex-col overflow-hidden select-none">
+<body id="bodyEl" class="bg-slate-900 text-white min-h-screen flex flex-col overflow-hidden select-none transition-colors duration-500">
 
-    <header class="p-4 flex justify-between items-center bg-slate-800 shadow-md">
-        <button onclick="toggleMute()" id="muteBtn" class="bg-slate-700 p-2 rounded-lg text-sm font-bold uppercase tracking-wider">
+    <header id="headerEl" class="p-4 flex justify-between items-center bg-slate-800 shadow-md z-10 transition-colors duration-500">
+        <button onclick="toggleMute()" id="muteBtn" class="bg-black/30 p-2 rounded-lg text-sm font-bold uppercase tracking-wider">
             🔊 Som Ligado
         </button>
-        <button onclick="resetProgress()" class="text-slate-400 text-xs underline uppercase tracking-widest">
-            Zerar Progresso
-        </button>
+        <div id="examProgress" class="text-white/60 text-xs font-bold uppercase tracking-widest text-right">
+            Prova 1<br>Ataque 0/0
+        </div>
     </header>
 
-    <main class="flex-grow flex flex-col items-center justify-around p-6 text-center">
+    <main class="flex-grow flex flex-col items-center justify-around p-6 text-center z-0 relative">
         
-        <div class="w-full">
-            <p class="text-slate-400 uppercase tracking-widest text-sm mb-2">Ataque</p>
-            <h1 id="attackName" class="text-4xl md:text-5xl font-black text-indigo-400 uppercase leading-none italic">
+        <div class="w-full mt-4">
+            <p class="text-white/50 uppercase tracking-widest text-sm mb-2">Ataque</p>
+            <h1 id="attackName" class="text-4xl md:text-5xl font-black text-indigo-400 uppercase leading-none italic transition-colors duration-500">
                 Aguardando...
             </h1>
         </div>
 
         <div class="w-full py-8">
-            <p id="stepIndicator" class="text-slate-500 uppercase tracking-widest text-xs mb-4">Técnica 1 de 3</p>
+            <p id="stepIndicator" class="text-white/50 uppercase tracking-widest text-xs mb-4">Técnica 1 de 3</p>
             <h2 id="defenseName" class="text-6xl md:text-8xl font-black text-white leading-tight">
-                Toque para Iniciar
+                Toque Iniciar
             </h2>
         </div>
 
-        <div id="statusMsg" class="h-6 text-slate-500 text-xs italic">
+        <div id="statusMsg" class="h-6 text-white/50 text-xs italic">
             Pratique os dois lados (Omote/Ura)
+        </div>
+
+        <div id="resetOptions" class="w-full mt-auto pt-6 flex justify-between px-2">
+            <button onclick="confirmResetCurrentExam()" class="text-white/40 hover:text-white text-[10px] md:text-xs underline uppercase tracking-widest transition-colors">
+                ↺ Reiniciar Prova
+            </button>
+            <button onclick="confirmResetAll()" class="text-rose-400/80 hover:text-rose-400 text-[10px] md:text-xs underline uppercase tracking-widest transition-colors">
+                ⚠ Zerar Tudo
+            </button>
         </div>
     </main>
 
-    <footer id="controls" class="hidden grid grid-cols-3 h-48 md:h-64 border-t border-slate-700">
+    <footer id="controls" class="hidden grid grid-cols-3 h-48 md:h-64 border-t border-black/20 z-10 bg-black/10">
         <button onclick="evaluateMove('facil')" class="bg-emerald-600 hover:bg-emerald-500 btn-active flex flex-col items-center justify-center p-4">
             <span class="text-3xl">😊</span>
             <span class="font-black text-xs mt-2 uppercase">Fácil</span>
@@ -58,147 +69,434 @@
         </button>
     </footer>
 
-    <div id="overlay" class="absolute inset-0 bg-slate-900 flex items-center justify-center p-10 z-50">
-        <button onclick="initApp()" class="bg-indigo-600 px-8 py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl shadow-indigo-500/50 text-center">
-            Começar Treino de Faixa Preta
+    <div id="beltSelection" class="hidden absolute inset-0 bg-slate-900 flex-col items-center justify-center p-6 z-[60]">
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-2 uppercase tracking-widest text-center">Selecione sua Faixa</h2>
+        <p class="text-slate-400 text-sm mb-10 text-center">Defina os ataques e defesas do seu nível.</p>
+        
+        <div class="space-y-4 w-full max-w-sm">
+            <button onclick="selectBelt('azul')" class="bg-blue-600 hover:bg-blue-500 w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl shadow-blue-500/30 text-white transition-all">
+                Faixa Azul
+            </button>
+            <button onclick="selectBelt('marrom')" class="bg-amber-700 hover:bg-amber-600 w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl shadow-amber-700/30 text-white transition-all">
+                Faixa Marrom
+            </button>
+            <button onclick="selectBelt('preta')" class="bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl shadow-slate-900/50 text-white transition-all">
+                Faixa Preta
+            </button>
+        </div>
+    </div>
+
+    <div id="overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-10 z-50 transition-colors duration-500">
+        <button onclick="initExamMode()" id="startBtn" class="bg-indigo-600 w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all">
+            Começar Treino
+        </button>
+    </div>
+
+    <div id="feedbackScreen" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex-col p-6 overflow-y-auto no-scrollbar pb-8">
+        <h2 class="text-2xl md:text-3xl font-black text-center text-white mb-2 uppercase tracking-widest mt-4">Resumo da Prova</h2>
+        <p class="text-white/60 text-center text-sm mb-6">Técnicas que precisa de focar mais:</p>
+        
+        <div id="feedbackContent" class="flex-grow space-y-4 mb-6"></div>
+
+        <button onclick="closeFeedbackAndContinue()" id="feedbackNextBtn" class="bg-indigo-600 w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl text-center mt-auto mb-4 transition-all">
+            Continuar
+        </button>
+        
+        <button onclick="confirmResetCurrentExam()" class="text-white/50 hover:text-white underline text-sm uppercase tracking-widest text-center mt-4 transition-colors">
+            ↺ Tentar esta Prova Novamente
         </button>
     </div>
 
     <script>
-        // Dados do Aplicativo
-        const ataques = [
-            "Katatetori", "Shomen Uchi", "Ryotetori", "Munetsuki", 
-            "Ushiro Kubishime", "Ryote Eri Tori", "Ushiro Ryotetori", 
-            "Yokomen Uchi", "Ushiro Katatori", "Katate Munadori", "Morotetori"
-        ];
+        // --- CONTROLE DE VERSÃO ---
+        const APP_VERSION = 6; // Only change on breaking changes, because can damage current user data. Old data will be cleared if version is different.
 
-        const defesas = [
-            "Dai-Ikkio", "Dai-Nikio", "Dai-Sankio", "Dai-Yonkio", "Dai-Gokio", 
-            "Irimi-Nage", "Shiho-Nage", "Kaiten-Nage", "Tenchi-Nage", "Kokiu-Nage", 
-            "Koshi-Nage", "Mawashi-Nage", "Sumi-Otoshi", "Kote-Gaeshi", "Kata-Moshi", 
-            "Ushiro-Kokiu", "Hiji-Garami", "Ude-Garami", "Juji-Garami", "Aiki-Otoshi", "Aiki-Nage"
-        ];
+        // Dados do Nível (Faixas)
+        const beltsData = {
+            azul: {
+                nome: "Faixa Azul",
+                ataques: ["Katatetori", "Shomen Uchi", "Ryotetori", "Munetsuki"],
+                defesas: [
+                    "Dai-Ikkio", "Dai-Nikio", "Dai-Sankio", "Dai-Yonkio", "Dai-Gokio", 
+                    "Irimi-Nage", "Shiho-Nage", "Kaiten-Nage", "Tenchi-Nage", "Kokiu-Nage", 
+                    "Koshi-Nage", "Mawashi-Nage"
+                ],
+                theme: { body: "bg-blue-950", header: "bg-blue-900", highlight: "text-cyan-400", button: "bg-cyan-600", shadow: "shadow-cyan-500/50" }
+            },
+            marrom: {
+                nome: "Faixa Marrom",
+                ataques: ["Katatetori", "Shomen Uchi", "Ryotetori", "Munetsuki", "Ushiro Kubishime", "Ryote Eri Tori", "Ushiro Ryotetori", "Yokomen Uchi"],
+                defesas: [
+                    "Dai-Ikkio", "Dai-Nikio", "Dai-Sankio", "Dai-Yonkio", "Dai-Gokio", 
+                    "Irimi-Nage", "Shiho-Nage", "Kaiten-Nage", "Tenchi-Nage", "Kokiu-Nage", 
+                    "Koshi-Nage", "Mawashi-Nage", "Sumi-Otoshi", "Kote-Gaeshi", "Kata-Moshi", 
+                    "Ushiro-Kokiu"
+                ],
+                theme: { body: "bg-[#291e14]", header: "bg-[#1c140c]", highlight: "text-amber-500", button: "bg-amber-700", shadow: "shadow-amber-700/50" }
+            },
+            preta: {
+                nome: "Faixa Preta",
+                ataques: ["Katatetori", "Shomen Uchi", "Ryotetori", "Munetsuki", "Ushiro Kubishime", "Ryote Eri Tori", "Ushiro Ryotetori", "Yokomen Uchi", "Ushiro Katatori", "Katate Munadori", "Morotetori"],
+                defesas: [
+                    "Dai-Ikkio", "Dai-Nikio", "Dai-Sankio", "Dai-Yonkio", "Dai-Gokio", 
+                    "Irimi-Nage", "Shiho-Nage", "Kaiten-Nage", "Tenchi-Nage", "Kokiu-Nage", 
+                    "Koshi-Nage", "Mawashi-Nage", "Sumi-Otoshi", "Kote-Gaeshi", "Kata-Moshi", 
+                    "Ushiro-Kokiu", "Hiji-Garami", "Ude-Garami", "Juji-Garami", "Aiki-Otoshi", "Aiki-Nage"
+                ],
+                theme: { body: "bg-slate-900", header: "bg-slate-800", highlight: "text-indigo-400", button: "bg-indigo-600", shadow: "shadow-indigo-500/50" }
+            }
+        };
 
-        let weights = {};
-        let currentAttack = "";
-        let currentRoundDefenses = [];
-        let defenseIndex = 0;
+        // Estado Global
+        let state = {
+            belt: null, // "azul", "marrom", ou "preta"
+            usedCombinations: [],
+            examAttacks: [],
+            currentAttackIndex: 0,
+            currentRoundDefenses: [],
+            defenseIndex: 0,
+            examNumber: 1,
+            currentExamRatings: { facil: [], medio: [], dificil: [] }
+        };
+
         let isMuted = false;
-        let recentQueue = []; 
 
-        // Inicialização com Wake-up de áudio para Mobile
-        function initApp() {
-            document.getElementById('overlay').classList.add('hidden');
-            document.getElementById('controls').classList.remove('hidden');
-            
-            // Força o desbloqueio do áudio no mobile com uma fala vazia
-            window.speechSynthesis.cancel();
-            const wakeUp = new SpeechSynthesisUtterance("");
-            window.speechSynthesis.speak(wakeUp);
-            
-            loadWeights();
-            startNewRound();
-        }
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
 
-        function loadWeights() {
-            const saved = localStorage.getItem('aikido_weights');
-            if (saved) {
-                weights = JSON.parse(saved);
-            } else {
-                defesas.forEach(d => weights[d] = 10);
+        function checkVersion() {
+            const savedVersion = localStorage.getItem('aikido_version');
+            if (!savedVersion || parseInt(savedVersion) < APP_VERSION) {
+                localStorage.clear();
+                localStorage.setItem('aikido_version', APP_VERSION);
             }
         }
 
-        function saveWeights() {
-            localStorage.setItem('aikido_weights', JSON.stringify(weights));
-        }
-
-        function getWeightedRandomDefenses(count) {
-            let pool = defesas.filter(d => !recentQueue.includes(d));
-            let selected = [];
-
-            for (let i = 0; i < count; i++) {
-                let totalWeight = pool.reduce((sum, d) => sum + weights[d], 0);
-                let random = Math.random() * totalWeight;
-                let cumulative = 0;
-
-                for (let j = 0; j < pool.length; j++) {
-                    cumulative += weights[pool[j]];
-                    if (random <= cumulative) {
-                        selected.push(pool[j]);
-                        pool.splice(j, 1);
-                        break;
-                    }
+        function loadState() {
+            const savedState = localStorage.getItem('aikido_state');
+            if (savedState) {
+                state = JSON.parse(savedState);
+                if (!state.currentExamRatings) {
+                    state.currentExamRatings = { facil: [], medio: [], dificil: [] };
                 }
             }
-            return selected;
         }
 
-        function startNewRound() {
-            currentAttack = ataques[Math.floor(Math.random() * ataques.length)];
-            currentRoundDefenses = getWeightedRandomDefenses(3);
-            defenseIndex = 0;
+        function saveState() {
+            localStorage.setItem('aikido_state', JSON.stringify(state));
+        }
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Calcula dinamicamente o número total de provas necessárias
+        function getTotalExams() {
+            if (!state.belt) return 1;
+            return Math.ceil(beltsData[state.belt].defesas.length / 3);
+        }
+
+        // Aplica as cores baseadas na faixa selecionada
+        function applyTheme() {
+            if (!state.belt) return;
+            const theme = beltsData[state.belt].theme;
+            
+            // Remove classes antigas de fundo
+            document.getElementById('bodyEl').className = `text-white min-h-screen flex flex-col overflow-hidden select-none transition-colors duration-500 ${theme.body}`;
+            document.getElementById('headerEl').className = `p-4 flex justify-between items-center shadow-md z-10 transition-colors duration-500 ${theme.header}`;
+            
+            // Título do Ataque
+            const attackName = document.getElementById('attackName');
+            attackName.className = `text-4xl md:text-5xl font-black uppercase leading-none italic transition-colors duration-500 ${theme.highlight}`;
+            
+            // Botões principais (Iniciar e Feedback)
+            const btnClasses = `w-full py-6 rounded-2xl text-2xl font-black uppercase tracking-tighter shadow-2xl text-center transition-all ${theme.button} ${theme.shadow}`;
+            document.getElementById('startBtn').className = btnClasses;
+            document.getElementById('feedbackNextBtn').className = `w-full py-5 rounded-2xl text-xl font-black uppercase tracking-tighter shadow-xl text-center mt-auto mb-4 transition-all ${theme.button} ${theme.shadow}`;
+        }
+
+        function initApp() {
+            checkVersion();
+            loadState(); 
+
+            if (!state.belt) {
+                // Primeira vez ou reset: Mostra a seleção de faixa
+                document.getElementById('beltSelection').classList.remove('hidden');
+                document.getElementById('beltSelection').classList.add('flex');
+                document.getElementById('overlay').classList.add('hidden');
+            } else {
+                // Já tem faixa salva, configura o app e mostra botão de continuar
+                document.getElementById('beltSelection').classList.add('hidden');
+                document.getElementById('beltSelection').classList.remove('flex');
+                document.getElementById('overlay').classList.remove('hidden');
+                
+                applyTheme();
+                setupStartButton();
+            }
+        }
+
+        function selectBelt(beltKey) {
+            state.belt = beltKey;
+            state.examNumber = 1; // Garante que inicia na primeira prova
+            saveState();
+            
+            document.getElementById('beltSelection').classList.add('hidden');
+            document.getElementById('beltSelection').classList.remove('flex');
+            document.getElementById('overlay').classList.remove('hidden');
+            
+            applyTheme();
+            setupStartButton();
+        }
+
+        function setupStartButton() {
+            const totalExams = getTotalExams();
+            const btn = document.getElementById('startBtn');
+            
+            if (state.examNumber > totalExams) {
+                btn.innerText = "Ver Resultado Final";
+            } else if (state.currentAttackIndex > 0 || state.defenseIndex > 0 || state.examNumber > 1) {
+                btn.innerText = `Continuar Prova ${state.examNumber}`;
+            } else {
+                btn.innerText = `Iniciar Treino ${beltsData[state.belt].nome}`;
+            }
+        }
+
+        function initExamMode() {
+            document.getElementById('overlay').classList.add('hidden');
+            document.getElementById('feedbackScreen').classList.add('hidden');
+            document.getElementById('feedbackScreen').classList.remove('flex');
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('statusMsg').innerText = "Pratique os dois lados (Omote/Ura)";
+            
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+            
+            if (state.examNumber > getTotalExams()) {
+                showGrandFinale();
+                return;
+            }
+
+            if (!state.examAttacks || state.examAttacks.length === 0) {
+                prepareNewExam();
+            } else if (state.defenseIndex >= state.currentRoundDefenses.length && state.currentRoundDefenses.length > 0) { 
+                prepareNextAttack();
+            } else {
+                updateDisplay();
+            }
+        }
+
+        function prepareNewExam() {
+            const ataquesNivel = beltsData[state.belt].ataques;
+            state.examAttacks = shuffleArray(ataquesNivel);
+            state.currentAttackIndex = 0;
+            state.currentExamRatings = { facil: [], medio: [], dificil: [] };
+            prepareNextAttack();
+        }
+
+        function prepareNextAttack() {
+            if (state.currentAttackIndex >= state.examAttacks.length) {
+                endExam();
+                return;
+            }
+
+            const currentAttack = state.examAttacks[state.currentAttackIndex];
+            const defesasNivel = beltsData[state.belt].defesas;
+            
+            let availableDefenses = defesasNivel.filter(d => !state.usedCombinations.includes(`${currentAttack}|${d}`));
+            
+            availableDefenses = shuffleArray(availableDefenses);
+            // Pega até 3 defesas. Na última prova podem sobrar menos que 3
+            state.currentRoundDefenses = availableDefenses.slice(0, 3);
+            state.defenseIndex = 0;
+            
+            saveState();
             updateDisplay();
         }
 
         function updateDisplay() {
-            const defense = currentRoundDefenses[defenseIndex];
+            const currentAttack = state.examAttacks[state.currentAttackIndex];
+            const defense = state.currentRoundDefenses[state.defenseIndex];
+            
+            document.getElementById('examProgress').innerHTML = `Prova ${state.examNumber}/${getTotalExams()}<br>Ataque ${state.currentAttackIndex + 1}/${state.examAttacks.length}`;
             document.getElementById('attackName').innerText = currentAttack;
             document.getElementById('defenseName').innerText = defense;
-            document.getElementById('stepIndicator').innerText = `Técnica ${defenseIndex + 1} de 3`;
+            document.getElementById('stepIndicator').innerText = `Técnica ${state.defenseIndex + 1} de ${state.currentRoundDefenses.length}`;
             
             speak(`${currentAttack}... ${defense}`);
         }
 
         function evaluateMove(rating) {
-            const defense = currentRoundDefenses[defenseIndex];
-            let currentWeight = weights[defense] || 10;
+            const currentAttack = state.examAttacks[state.currentAttackIndex];
+            const defense = state.currentRoundDefenses[state.defenseIndex];
 
-            if (rating === 'facil') {
-                // Reduz suavemente. Demora mais para "sumir", garantindo a perfeição.
-                currentWeight = Math.max(2, currentWeight - 3); 
-            } 
-            else if (rating === 'medio') {
-                // Mantém o desafio ou sobe levemente
-                currentWeight += 5;
-            } 
-            else if (rating === 'dificil') {
-                // Sobe agressivo, mas com um limite saudável
-                currentWeight += 15;
-            }
+            state.currentExamRatings[rating].push(`${currentAttack} x ${defense}`);
+            state.usedCombinations.push(`${currentAttack}|${defense}`);
+            state.defenseIndex++;
 
-            // Teto de 50 para não saturar o sorteio
-            weights[defense] = Math.min(currentWeight, 50);
+            saveState();
 
-            // Adiciona à fila de resfriamento (para não repetir logo em seguida)
-            recentQueue.push(defense);
-            if (recentQueue.length > 6) recentQueue.shift(); 
-
-            saveWeights();
-            defenseIndex++;
-
-            if (defenseIndex < 3) {
+            if (state.defenseIndex < state.currentRoundDefenses.length) {
                 updateDisplay();
             } else {
-                startNewRound();
+                state.currentAttackIndex++;
+                prepareNextAttack();
             }
         }
 
-        // Função de voz otimizada para Mobile (iOS/Android)
+        function endExam() {
+            showFeedbackScreen();
+        }
+
+        function showFeedbackScreen() {
+            document.getElementById('controls').classList.add('hidden');
+            const feedbackScreen = document.getElementById('feedbackScreen');
+            const content = document.getElementById('feedbackContent');
+            const btn = document.getElementById('feedbackNextBtn');
+            
+            content.innerHTML = '';
+            const ratings = state.currentExamRatings;
+
+            const renderList = (title, items, bgColor, textColor, borderColor, emoji) => {
+                if (items.length === 0) return '';
+                let html = `
+                    <div class="${bgColor} rounded-xl p-4 border-l-4 ${borderColor}">
+                        <h3 class="text-sm font-bold mb-3 uppercase tracking-wider flex items-center gap-2 ${textColor}">
+                            <span>${emoji}</span> ${title} (${items.length})
+                        </h3>
+                        <ul class="text-sm text-white/80 space-y-2 ml-2">`;
+                items.forEach(item => {
+                    html += `<li class="border-b border-white/10 pb-1 last:border-0">${item}</li>`;
+                });
+                html += `</ul></div>`;
+                return html;
+            };
+
+            content.innerHTML += renderList('Difíceis', ratings.dificil, 'bg-rose-950/50', 'text-rose-400', 'border-rose-500', '😱');
+            content.innerHTML += renderList('Médias', ratings.medio, 'bg-amber-950/50', 'text-amber-400', 'border-amber-500', '😐');
+            content.innerHTML += renderList('Fáceis', ratings.facil, 'bg-emerald-950/50', 'text-emerald-400', 'border-emerald-500', '😊');
+
+            if (state.examNumber >= getTotalExams()) {
+                btn.innerText = "Ver Resultado Final";
+            } else {
+                btn.innerText = `Iniciar Prova ${state.examNumber + 1}`;
+            }
+
+            feedbackScreen.classList.remove('hidden');
+            feedbackScreen.classList.add('flex');
+            
+            speak("Prova concluída.");
+        }
+
+        function closeFeedbackAndContinue() {
+            state.examNumber++;
+            state.examAttacks = []; 
+            saveState();
+
+            if (state.examNumber > getTotalExams()) {
+                document.getElementById('feedbackScreen').classList.add('hidden');
+                document.getElementById('feedbackScreen').classList.remove('flex');
+                showGrandFinale();
+            } else {
+                initExamMode(); 
+            }
+        }
+
+        function showGrandFinale() {
+            const data = beltsData[state.belt];
+            const totalTecnicas = data.ataques.length * data.defesas.length;
+
+            document.getElementById('examProgress').innerText = data.nome;
+            document.getElementById('attackName').innerText = "Mestre!";
+            document.getElementById('defenseName').innerText = "100% Concluído";
+            document.getElementById('stepIndicator').innerText = `Todas as ${totalTecnicas} técnicas`;
+            document.getElementById('statusMsg').innerText = "Dominou todos os ataques e defesas do seu nível.";
+            
+            document.getElementById('controls').classList.add('hidden');
+            document.getElementById('resetOptions').classList.add('hidden');
+            const overlay = document.getElementById('overlay');
+            overlay.classList.remove('hidden');
+            
+            const btn = document.getElementById('startBtn');
+            btn.innerText = "Zerar Tudo e Trocar Faixa";
+            btn.onclick = confirmResetAll;
+
+            speak(`Parabéns!`);
+        }
+
+        function confirmResetAll() {
+            if(confirm("Tem a certeza absoluta que deseja apagar TODO o seu histórico e voltar à seleção de faixa?")) {
+                localStorage.removeItem('aikido_state');
+                state = {
+                    belt: null,
+                    usedCombinations: [], 
+                    examAttacks: [],      
+                    currentAttackIndex: 0,
+                    currentRoundDefenses: [],
+                    defenseIndex: 0,
+                    examNumber: 1,
+                    currentExamRatings: { facil: [], medio: [], dificil: [] }
+                };
+                
+                // Restaura interface
+                document.getElementById('startBtn').onclick = initExamMode; 
+                document.getElementById('resetOptions').classList.remove('hidden');
+                
+                // Remove o tema visual atual voltando para o padrão (padrão preta/slate)
+                document.getElementById('bodyEl').className = `bg-slate-900 text-white min-h-screen flex flex-col overflow-hidden select-none transition-colors duration-500`;
+                document.getElementById('headerEl').className = `p-4 flex justify-between items-center bg-slate-800 shadow-md z-10 transition-colors duration-500`;
+                
+                initApp();
+            }
+        }
+
+        function confirmResetCurrentExam() {
+            if(confirm(`Tem a certeza que deseja reiniciar a Prova ${state.examNumber} do zero? As técnicas desta prova não ficarão salvas.`)) {
+                
+                let combosToRemove = [];
+                ['facil', 'medio', 'dificil'].forEach(rating => {
+                    state.currentExamRatings[rating].forEach(item => {
+                        const parts = item.split(" x ");
+                        if(parts.length === 2) {
+                            combosToRemove.push(`${parts[0]}|${parts[1]}`);
+                        }
+                    });
+                });
+
+                state.usedCombinations = state.usedCombinations.filter(combo => !combosToRemove.includes(combo));
+
+                state.examAttacks = [];
+                state.currentAttackIndex = 0;
+                state.currentRoundDefenses = [];
+                state.defenseIndex = 0;
+                state.currentExamRatings = { facil: [], medio: [], dificil: [] };
+                
+                saveState();
+                
+                document.getElementById('feedbackScreen').classList.add('hidden');
+                document.getElementById('feedbackScreen').classList.remove('flex');
+                
+                setupStartButton();
+                document.getElementById('controls').classList.add('hidden');
+                document.getElementById('overlay').classList.remove('hidden');
+            }
+        }
+
         function speak(text) {
             if (isMuted) return;
 
-            // Cancela falas pendentes para evitar travamento da fila no mobile
             window.speechSynthesis.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
             
-            // Configurações de voz
             utterance.lang = 'pt-BR';
             utterance.rate = 0.8;
             utterance.pitch = 1.0;
 
-            // Tenta encontrar uma voz japonesa, se não houver, usa a padrão do sistema
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find(v => v.lang.includes('ja') || v.lang.includes('JP'));
             if (preferredVoice) {
@@ -208,23 +506,14 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        // Garante que as vozes sejam carregadas no Chrome/Android
         window.speechSynthesis.onvoiceschanged = () => {
             window.speechSynthesis.getVoices();
         };
 
         function toggleMute() {
             isMuted = !isMuted;
-            document.getElementById('muteBtn').innerText = isMuted ? "🔇 Mudo" : "🔊 Som Ligado";
-        }
-
-        function resetProgress() {
-            if (confirm("Tem certeza que quer zerar o aprendizado das técnicas?")) {
-                localStorage.removeItem('aikido_weights');
-                loadWeights();
-                alert("Progresso zerado!");
-                startNewRound();
-            }
+            const btn = document.getElementById('muteBtn');
+            btn.innerText = isMuted ? "🔇 Mudo" : "🔊 Som Ligado";
         }
     </script>
 </body>
